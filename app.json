@@ -1,19 +1,24 @@
 {
   "expo": {
-    "name": "parkingo-init",
-    "slug": "parkingo-init",
+    "name": "ParkinGo",
+    "slug": "parkingo",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
+    "scheme": "parkingo",
     "splash": {
       "image": "./assets/splash-icon.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "ParkinGo needs your location to show nearby parking spots.",
+        "NSLocationAlwaysAndWhenInUseUsageDescription": "ParkinGo uses background location to auto-reserve parking spots as you approach."
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -21,10 +26,23 @@
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true,
-      "predictiveBackGestureEnabled": false
+      "permissions": [
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_COARSE_LOCATION",
+        "ACCESS_BACKGROUND_LOCATION"
+      ]
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    }
+    },
+    "plugins": [
+      "expo-router",
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "ParkinGo uses background location to auto-reserve parking spots as you approach."
+        }
+      ]
+    ]
   }
 }
