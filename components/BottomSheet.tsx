@@ -3,13 +3,14 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 interface Props {
   children?: React.ReactNode;
+  expanded?: boolean;
 }
 
-export function BottomSheet({ children }: Props) {
+export function BottomSheet({ children, expanded }: Props) {
   const insets = useSafeAreaInsets();
 
   return (
-    <View style={[styles.sheet, { paddingBottom: insets.bottom + 8 }]}>
+    <View style={[styles.sheet, { paddingBottom: insets.bottom + 8, minHeight: expanded ? 200 : 80 }]}>
       <View style={styles.handle} />
       {children ?? (
         <Text style={styles.hint}>Tap a parking spot to see details</Text>

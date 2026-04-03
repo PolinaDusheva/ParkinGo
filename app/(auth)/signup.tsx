@@ -33,7 +33,7 @@ export default function SignUpScreen() {
     const { error } = await supabase.auth.signUp({
       email,
       password,
-      options: { data: { display_name: displayName } },
+      options: { data: { display_name: displayName }, emailRedirectTo: 'parkingo://' },
     });
     setLoading(false);
     if (error) {

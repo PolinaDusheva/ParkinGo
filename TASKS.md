@@ -18,16 +18,17 @@
 
 ## Feature 3: Pre-Mapped Parking Spots
 - [ ] Write Overpass API data pipeline script to generate parking spots
-- [ ] Create spot data model and seed spots to database
-- [ ] Render color-coded spot markers on the map (green/red/blue)
+- [ ] Create spot data model and seed spots to database (spot location data pending from user)
+- [ ] Replace mock spots in useParking.ts with Supabase real-time listener
 - [ ] Implement marker clustering (individual at street level, clustered when zoomed out)
 - [ ] Load spots dynamically based on visible map region
 - [ ] Add real-time listener on visible spots for instant updates
 
 ## Feature 4: Spot Marking System
-- [ ] Build 'I'm parking here' flow (tap free spot → bottom sheet → confirm)
-- [ ] Add zone duration prompt for blue/green zone spots
-- [ ] Build 'Leave parking' flow with confirmation
+- [x] Build 'I'm parking here' flow (tap free spot → bottom sheet → confirm)
+- [x] Add zone duration prompt for blue/green zone spots (30min / 1h / 2h / 3h)
+- [x] Build 'Leave parking' flow with confirmation alert
+- [x] Render colored markers on map (green=free, red=occupied, blue=reserved)
 - [ ] Auto-detect nearby free spot and suggest parking
 - [ ] Add data validation (only owner unmarks, stale spot expiry, zone auto-free)
 
