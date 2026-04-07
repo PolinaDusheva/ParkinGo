@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Alert, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { Spot, ParkingDuration, DURATION_OPTIONS, ZoneType } from '../types/parking';
 
@@ -8,6 +8,24 @@ interface Props {
   onPark: (spotId: string, duration: ParkingDuration | null) => void;
   onLeave: (spotId: string) => void;
   onDismiss: () => void;
+}
+
+function formatTimeLeft(isoString: string | null): string | null {
+  if (!isoString) return null;
+  const diffMs = new Date(isoString).getTime() - Date.now();
+  if (diffMs <= 0) return null;
+  const totalMin = Math.ceil(diffMs / 60_000);
+  if (totalMin >= 60) {
+    const h = Math.floor(totalMin / 60);
+    const m = totalMin % 60;
+    return m > 0 ? `${h}h ${m}m left` : `${h}h left`;
+  }
+  return `${totalMin} min left`;
+}
+
+function formatClock(isoString: string | null): string | null {
+  if (!isoString) return null;
+  return new Date(isoString).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 }
 
 const ZONE_COLORS: Record<ZoneType, string> = {
@@ -24,6 +42,14 @@ const ZONE_LABELS: Record<ZoneType, string> = {
 
 export function SpotDetail({ spot, currentUserId, onPark, onLeave, onDismiss }: Props) {
   const [showDurationPicker, setShowDurationPicker] = useState(false);
+  const [timeLeft, setTimeLeft] = useState(() => formatTimeLeft(spot.expectedFreeAt));
+
+  useEffect(() => {
+    setTimeLeft(formatTimeLeft(spot.expectedFreeAt));
+    if (!spot.expectedFreeAt) return;
+    const id = setInterval(() => setTimeLeft(formatTimeLeft(spot.expectedFreeAt)), 60_000);
+    return () => clearInterval(id);
+  }, [spot.expectedFreeAt]);
 
   const isOwnSpot = spot.status === 'occupied' && spot.occupiedBy === currentUserId;
   const isOtherSpot = spot.status === 'occupied' && spot.occupiedBy !== currentUserId;
@@ -82,8 +108,22 @@ export function SpotDetail({ spot, currentUserId, onPark, onLeave, onDismiss }: 
       {/* Status */}
       {isFree && <Text style={styles.statusFree}>Free</Text>}
       {isOwnSpot && <Text style={styles.statusOwn}>You're parked here</Text>}
-      {isOtherSpot && <Text style={styles.statusTaken}>This spot is taken</Text>}
+      {isOtherSpot && <Text style={styles.statusTaken}>Occupied</Text>}
       {isReserved && <Text style={styles.statusReserved}>Reserved</Text>}
+
+      {/* Timer info */}
+      {isOwnSpot && timeLeft && (
+        <Text style={styles.timerOwn}>{timeLeft}</Text>
+      )}
+      {isOwnSpot && !timeLeft && spot.occupiedAt && (
+        <Text style={styles.timerHint}>Parked since {formatClock(spot.occupiedAt)}</Text>
+      )}
+      {isOtherSpot && timeLeft && (
+        <Text style={styles.timerOther}>Expected free in {timeLeft}</Text>
+      )}
+      {isOtherSpot && !timeLeft && spot.occupiedAt && (
+        <Text style={styles.timerHint}>Parked since {formatClock(spot.occupiedAt)}</Text>
+      )}
 
       {/* Duration picker (inline, shown after tapping "I'm parking here" on a zone spot) */}
       {showDurationPicker && (
@@ -170,6 +210,19 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: '#FF9500',
     fontWeight: '500',
+  },
+  timerOwn: {
+    fontSize: 14,
+    color: '#007AFF',
+    fontWeight: '500',
+  },
+  timerOther: {
+    fontSize: 14,
+    color: '#8E8E93',
+  },
+  timerHint: {
+    fontSize: 13,
+    color: '#AEAEB2',
   },
   durationPrompt: {
     fontSize: 14,

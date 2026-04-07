@@ -33,9 +33,9 @@
 - [x] Add data validation (only owner unmarks, stale spot expiry, zone auto-free)
 
 ## Feature 5: Blue/Green Zone Display & Timer
-- [ ] Display blue/green zone visual indicators on spots and streets
-- [ ] Build countdown timer badge on occupied zone spots
-- [ ] Show zone details and time prediction in spot bottom sheet
+- [x] Display blue/green zone visual indicators on spots and streets
+- [x] Build countdown timer badge on occupied zone spots
+- [x] Show zone details and time prediction in spot bottom sheet
 
 ## Feature 6: Street Congestion Indicator
 - [ ] Aggregate spots by street and calculate occupancy rate

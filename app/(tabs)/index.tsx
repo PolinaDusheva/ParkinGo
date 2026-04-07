@@ -34,11 +34,38 @@ const VARNA_REGION = {
   longitudeDelta: 0.05,
 };
 
-const MARKER_COLORS: Record<Spot['status'], string> = {
-  free: 'green',
-  occupied: 'red',
-  reserved: '#007AFF',
+const STATUS_FILL: Record<Spot['status'], string> = {
+  free: '#34C759',
+  occupied: '#FF3B30',
+  reserved: '#FF9500',
 };
+
+const ZONE_BORDER: Record<Spot['zoneType'], string> = {
+  none: 'transparent',
+  blue: '#007AFF',
+  green: '#34C759',
+};
+
+function SpotMarker({ spot }: { spot: Spot }) {
+  const hasBorder = spot.zoneType !== 'none';
+  return (
+    <View
+      style={{
+        width: 24,
+        height: 24,
+        borderRadius: 12,
+        backgroundColor: STATUS_FILL[spot.status],
+        borderWidth: hasBorder ? 3 : 0,
+        borderColor: ZONE_BORDER[spot.zoneType],
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.35,
+        shadowRadius: 2,
+        elevation: 4,
+      }}
+    />
+  );
+}
 
 export default function MapScreen() {
   const mapRef = useRef<MapView>(null);
@@ -116,13 +143,14 @@ export default function MapScreen() {
           <Marker
             key={spot.id}
             coordinate={{ latitude: spot.lat, longitude: spot.lng }}
-            pinColor={MARKER_COLORS[spot.status]}
             onPress={(e) => {
               e.stopPropagation();
               setSelectedSpot(spot);
             }}
             tracksViewChanges={false}
-          />
+          >
+            <SpotMarker spot={spot} />
+          </Marker>
         ))}
       </MapView>
 
