@@ -29,8 +29,8 @@
 - [x] Add zone duration prompt for blue/green zone spots (30min / 1h / 2h / 3h)
 - [x] Build 'Leave parking' flow with confirmation alert
 - [x] Render colored markers on map (green=free, red=occupied, blue=reserved)
-- [ ] Auto-detect nearby free spot and suggest parking
-- [ ] Add data validation (only owner unmarks, stale spot expiry, zone auto-free)
+- [x] Auto-detect nearby free spot and suggest parking
+- [x] Add data validation (only owner unmarks, stale spot expiry, zone auto-free)
 
 ## Feature 5: Blue/Green Zone Display & Timer
 - [ ] Display blue/green zone visual indicators on spots and streets

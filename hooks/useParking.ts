@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { Spot, ParkingDuration } from '../types/parking';
 import { supabase } from '../lib/supabase';
 
@@ -141,8 +141,41 @@ const MOCK_SPOTS: Spot[] = [
   },
 ];
 
+const STALE_THRESHOLD_MS = 24 * 60 * 60 * 1000; // 24 hours
+const EXPIRY_CHECK_INTERVAL_MS = 30_000; // 30 seconds
+
+function freeSpot(s: Spot): Spot {
+  return { ...s, status: 'free', occupiedBy: null, occupiedAt: null, expectedFreeAt: null };
+}
+
 export function useParking(currentUserId: string | null) {
   const [spots, setSpots] = useState<Spot[]>(MOCK_SPOTS);
+
+  // Auto-free zone spots whose timer has expired and stale spots (>24h, no zone time)
+  useEffect(() => {
+    const tick = () => {
+      const now = Date.now();
+      setSpots((prev) => {
+        const hasExpired = prev.some((s) => {
+          if (s.status !== 'occupied') return false;
+          if (s.expectedFreeAt && new Date(s.expectedFreeAt).getTime() <= now) return true;
+          if (!s.expectedFreeAt && s.occupiedAt && now - new Date(s.occupiedAt).getTime() > STALE_THRESHOLD_MS) return true;
+          return false;
+        });
+        if (!hasExpired) return prev; // skip re-render if nothing changed
+        return prev.map((s) => {
+          if (s.status !== 'occupied') return s;
+          if (s.expectedFreeAt && new Date(s.expectedFreeAt).getTime() <= now) return freeSpot(s);
+          if (!s.expectedFreeAt && s.occupiedAt && now - new Date(s.occupiedAt).getTime() > STALE_THRESHOLD_MS) return freeSpot(s);
+          return s;
+        });
+      });
+    };
+
+    tick(); // run immediately on mount
+    const id = setInterval(tick, EXPIRY_CHECK_INTERVAL_MS);
+    return () => clearInterval(id);
+  }, []);
 
   const parkSpot = useCallback(
     (spotId: string, duration: ParkingDuration | null) => {
@@ -181,30 +214,26 @@ export function useParking(currentUserId: string | null) {
     [currentUserId],
   );
 
-  const leaveSpot = useCallback((spotId: string) => {
-    // Optimistic local update
-    setSpots((prev) =>
-      prev.map((s) =>
-        s.id === spotId
-          ? {
-              ...s,
-              status: 'free',
-              occupiedBy: null,
-              occupiedAt: null,
-              expectedFreeAt: null,
-            }
-          : s,
-      ),
-    );
+  const leaveSpot = useCallback(
+    (spotId: string) => {
+      // Guard: only the owner can free a spot
+      setSpots((prev) => {
+        const spot = prev.find((s) => s.id === spotId);
+        if (!spot || spot.occupiedBy !== currentUserId) return prev;
 
-    // Fire-and-forget Supabase update
-    supabase
-      .from('spots')
-      .update({ status: 'free', occupiedBy: null, occupiedAt: null, expectedFreeAt: null })
-      .eq('id', spotId)
-      .then(() => {})
-      .catch(() => {});
-  }, []);
+        // Fire-and-forget Supabase update
+        supabase
+          .from('spots')
+          .update({ status: 'free', occupiedBy: null, occupiedAt: null, expectedFreeAt: null })
+          .eq('id', spotId)
+          .then(() => {})
+          .catch(() => {});
+
+        return prev.map((s) => (s.id === spotId ? freeSpot(s) : s));
+      });
+    },
+    [currentUserId],
+  );
 
   return { spots, parkSpot, leaveSpot };
 }

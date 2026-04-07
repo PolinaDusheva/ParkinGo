@@ -1,5 +1,5 @@
-import MapView, { Marker, PROVIDER_DEFAULT } from 'react-native-maps';
-import { StyleSheet, View, ActivityIndicator } from 'react-native';
+import MapView, { Marker, Polygon, PROVIDER_DEFAULT } from 'react-native-maps';
+import { Alert, StyleSheet, View, ActivityIndicator } from 'react-native';
 import { useEffect, useRef, useState } from 'react';
 import * as Location from 'expo-location';
 import { BottomSheet } from '../../components/BottomSheet';
@@ -7,6 +7,25 @@ import { SpotDetail } from '../../components/SpotDetail';
 import { useParking } from '../../hooks/useParking';
 import { useAuth } from '../../context/AuthContext';
 import { Spot } from '../../types/parking';
+import { BLUE_ZONE_POLYGONS } from '../../lib/zones';
+
+// Haversine distance in metres between two lat/lng points
+function distanceMetres(
+  lat1: number, lng1: number,
+  lat2: number, lng2: number,
+): number {
+  const R = 6_371_000;
+  const dLat = ((lat2 - lat1) * Math.PI) / 180;
+  const dLng = ((lng2 - lng1) * Math.PI) / 180;
+  const a =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos((lat1 * Math.PI) / 180) *
+      Math.cos((lat2 * Math.PI) / 180) *
+      Math.sin(dLng / 2) ** 2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
+
+const NEARBY_THRESHOLD_M = 10;
 
 const VARNA_REGION = {
   latitude: 43.2141,
@@ -38,18 +57,36 @@ export default function MapScreen() {
         const location = await Location.getCurrentPositionAsync({
           accuracy: Location.Accuracy.Balanced,
         });
+        const { latitude, longitude } = location.coords;
+
         mapRef.current?.animateToRegion(
-          {
-            latitude: location.coords.latitude,
-            longitude: location.coords.longitude,
-            latitudeDelta: 0.01,
-            longitudeDelta: 0.01,
-          },
+          { latitude, longitude, latitudeDelta: 0.01, longitudeDelta: 0.01 },
           800,
         );
+
+        // Suggest parking if user is standing next to a free spot
+        if (user) {
+          const nearby = spots.find(
+            (s) =>
+              s.status === 'free' &&
+              distanceMetres(latitude, longitude, s.lat, s.lng) <= NEARBY_THRESHOLD_M,
+          );
+          if (nearby) {
+            Alert.alert(
+              'Are you parking here?',
+              `Free spot on ${nearby.streetName}`,
+              [
+                { text: 'Not now', style: 'cancel' },
+                { text: 'Yes, park here', onPress: () => setSelectedSpot(nearby) },
+              ],
+            );
+          }
+        }
       }
       setLoading(false);
     })();
+    // spots intentionally excluded — we only want this check once on mount
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
@@ -65,6 +102,16 @@ export default function MapScreen() {
         showsScale
         onPress={() => setSelectedSpot(null)}
       >
+        {BLUE_ZONE_POLYGONS.map((zone) => (
+          <Polygon
+            key={zone.id}
+            coordinates={zone.coordinates}
+            strokeColor="rgba(0, 122, 255, 0.6)"
+            fillColor="rgba(0, 122, 255, 0.08)"
+            strokeWidth={1.5}
+          />
+        ))}
+
         {spots.map((spot) => (
           <Marker
             key={spot.id}
