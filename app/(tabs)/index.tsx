@@ -1,5 +1,5 @@
-import MapView, { Marker, Polygon, PROVIDER_DEFAULT } from 'react-native-maps';
-import { Alert, StyleSheet, View, ActivityIndicator } from 'react-native';
+import MapView, { Marker, Polygon, PROVIDER_DEFAULT, PROVIDER_GOOGLE } from 'react-native-maps';
+import { Alert, Platform, StyleSheet, View, ActivityIndicator } from 'react-native';
 import { useEffect, useRef, useState } from 'react';
 import * as Location from 'expo-location';
 import { BottomSheet } from '../../components/BottomSheet';
@@ -74,7 +74,14 @@ export default function MapScreen() {
   const [selectedSpot, setSelectedSpot] = useState<Spot | null>(null);
 
   const { user } = useAuth();
-  const { spots, parkSpot, leaveSpot } = useParking(user?.id ?? null);
+  const { spots, spotsLoading, parkSpot, leaveSpot } = useParking(user?.id ?? null);
+
+  // Keep selectedSpot in sync when the spots array updates (e.g. after parking)
+  useEffect(() => {
+    if (!selectedSpot) return;
+    const updated = spots.find((s) => s.id === selectedSpot.id);
+    if (updated) setSelectedSpot(updated);
+  }, [spots]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     (async () => {
@@ -121,12 +128,13 @@ export default function MapScreen() {
       <MapView
         ref={mapRef}
         style={styles.map}
-        provider={PROVIDER_DEFAULT}
+        provider={Platform.OS === 'android' ? PROVIDER_GOOGLE : PROVIDER_DEFAULT}
         initialRegion={VARNA_REGION}
         showsUserLocation={locationGranted}
         showsMyLocationButton={locationGranted}
         showsCompass
         showsScale
+        showsTraffic
         onPress={() => setSelectedSpot(null)}
       >
         {BLUE_ZONE_POLYGONS.map((zone) => (
@@ -154,7 +162,7 @@ export default function MapScreen() {
         ))}
       </MapView>
 
-      {loading && (
+      {(loading || spotsLoading) && (
         <View style={styles.loadingOverlay}>
           <ActivityIndicator size="large" color="#4A90D9" />
         </View>
@@ -167,7 +175,7 @@ export default function MapScreen() {
             currentUserId={user?.id ?? null}
             onPark={(id, duration) => {
               parkSpot(id, duration);
-              setSelectedSpot(null);
+              // Keep sheet open — sync effect will update selectedSpot to show countdown
             }}
             onLeave={(id) => {
               leaveSpot(id);

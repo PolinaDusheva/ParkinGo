@@ -10,17 +10,19 @@ interface Props {
   onDismiss: () => void;
 }
 
-function formatTimeLeft(isoString: string | null): string | null {
+// Returns "HH:MM:SS" or "MM:SS" — updates every second
+function formatCountdown(isoString: string | null): string | null {
   if (!isoString) return null;
   const diffMs = new Date(isoString).getTime() - Date.now();
   if (diffMs <= 0) return null;
-  const totalMin = Math.ceil(diffMs / 60_000);
-  if (totalMin >= 60) {
-    const h = Math.floor(totalMin / 60);
-    const m = totalMin % 60;
-    return m > 0 ? `${h}h ${m}m left` : `${h}h left`;
+  const totalSec = Math.ceil(diffMs / 1000);
+  const h = Math.floor(totalSec / 3600);
+  const m = Math.floor((totalSec % 3600) / 60);
+  const s = totalSec % 60;
+  if (h > 0) {
+    return `${h}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
   }
-  return `${totalMin} min left`;
+  return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
 }
 
 function formatClock(isoString: string | null): string | null {
@@ -42,12 +44,18 @@ const ZONE_LABELS: Record<ZoneType, string> = {
 
 export function SpotDetail({ spot, currentUserId, onPark, onLeave, onDismiss }: Props) {
   const [showDurationPicker, setShowDurationPicker] = useState(false);
-  const [timeLeft, setTimeLeft] = useState(() => formatTimeLeft(spot.expectedFreeAt));
+  const [countdown, setCountdown] = useState(() => formatCountdown(spot.expectedFreeAt));
 
+  // Reset duration picker when spot status changes (e.g. after parking)
   useEffect(() => {
-    setTimeLeft(formatTimeLeft(spot.expectedFreeAt));
+    setShowDurationPicker(false);
+  }, [spot.status]);
+
+  // Second-precision countdown tick
+  useEffect(() => {
+    setCountdown(formatCountdown(spot.expectedFreeAt));
     if (!spot.expectedFreeAt) return;
-    const id = setInterval(() => setTimeLeft(formatTimeLeft(spot.expectedFreeAt)), 60_000);
+    const id = setInterval(() => setCountdown(formatCountdown(spot.expectedFreeAt)), 1000);
     return () => clearInterval(id);
   }, [spot.expectedFreeAt]);
 
@@ -61,13 +69,13 @@ export function SpotDetail({ spot, currentUserId, onPark, onLeave, onDismiss }: 
       setShowDurationPicker(true);
     } else {
       onPark(spot.id, null);
-      onDismiss();
+      // Sheet stays open — shows "You're parked here"
     }
   }
 
   function handleDurationSelect(duration: ParkingDuration) {
     onPark(spot.id, duration);
-    onDismiss();
+    // Sheet stays open — sync effect in MapScreen will update spot to show countdown
   }
 
   function handleLeavePress() {
@@ -105,27 +113,34 @@ export function SpotDetail({ spot, currentUserId, onPark, onLeave, onDismiss }: 
         </TouchableOpacity>
       </View>
 
-      {/* Status */}
+      {/* Status label */}
       {isFree && <Text style={styles.statusFree}>Free</Text>}
       {isOwnSpot && <Text style={styles.statusOwn}>You're parked here</Text>}
       {isOtherSpot && <Text style={styles.statusTaken}>Occupied</Text>}
       {isReserved && <Text style={styles.statusReserved}>Reserved</Text>}
 
-      {/* Timer info */}
-      {isOwnSpot && timeLeft && (
-        <Text style={styles.timerOwn}>{timeLeft}</Text>
+      {/* Countdown for own spot with a timer */}
+      {isOwnSpot && spot.expectedFreeAt && countdown && (
+        <View style={styles.countdownBox}>
+          <Text style={styles.countdownLabel}>Time remaining</Text>
+          <Text style={styles.countdownValue}>{countdown}</Text>
+        </View>
       )}
-      {isOwnSpot && !timeLeft && spot.occupiedAt && (
-        <Text style={styles.timerHint}>Parked since {formatClock(spot.occupiedAt)}</Text>
-      )}
-      {isOtherSpot && timeLeft && (
-        <Text style={styles.timerOther}>Expected free in {timeLeft}</Text>
-      )}
-      {isOtherSpot && !timeLeft && spot.occupiedAt && (
+
+      {/* No-timer own spot: show parked-since time */}
+      {isOwnSpot && !spot.expectedFreeAt && spot.occupiedAt && (
         <Text style={styles.timerHint}>Parked since {formatClock(spot.occupiedAt)}</Text>
       )}
 
-      {/* Duration picker (inline, shown after tapping "I'm parking here" on a zone spot) */}
+      {/* Other driver's spot */}
+      {isOtherSpot && countdown && (
+        <Text style={styles.timerOther}>Expected free in {countdown}</Text>
+      )}
+      {isOtherSpot && !countdown && spot.occupiedAt && (
+        <Text style={styles.timerHint}>Parked since {formatClock(spot.occupiedAt)}</Text>
+      )}
+
+      {/* Duration picker */}
       {showDurationPicker && (
         <View>
           <Text style={styles.durationPrompt}>How long are you parking?</Text>
@@ -211,10 +226,26 @@ const styles = StyleSheet.create({
     color: '#FF9500',
     fontWeight: '500',
   },
-  timerOwn: {
-    fontSize: 14,
+  countdownBox: {
+    backgroundColor: '#007AFF10',
+    borderRadius: 12,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    alignItems: 'center',
+  },
+  countdownLabel: {
+    fontSize: 12,
     color: '#007AFF',
     fontWeight: '500',
+    marginBottom: 4,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  countdownValue: {
+    fontSize: 36,
+    fontWeight: '700',
+    color: '#007AFF',
+    fontVariant: ['tabular-nums'],
   },
   timerOther: {
     fontSize: 14,

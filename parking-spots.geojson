@@ -5,90 +5,84 @@
       "type": "Feature",
       "properties": {
         "id": 1,
+        "streetName": "bul. Osmi Primorski Polk",
+        "zoneType": "blue",
         "method": "manual",
         "time": "2026-04-07T19:54:43.493Z"
       },
       "geometry": {
         "type": "Point",
-        "coordinates": [
-          27.924639,
-          43.210476
-        ]
+        "coordinates": [27.924639, 43.210476]
       }
     },
     {
       "type": "Feature",
       "properties": {
         "id": 2,
+        "streetName": "bul. Osmi Primorski Polk",
+        "zoneType": "blue",
         "method": "manual",
         "time": "2026-04-07T19:54:47.297Z"
       },
       "geometry": {
         "type": "Point",
-        "coordinates": [
-          27.924693,
-          43.210484
-        ]
+        "coordinates": [27.924693, 43.210484]
       }
     },
     {
       "type": "Feature",
       "properties": {
         "id": 3,
+        "streetName": "bul. Osmi Primorski Polk",
+        "zoneType": "blue",
         "method": "manual",
         "time": "2026-04-07T19:54:49.013Z"
       },
       "geometry": {
         "type": "Point",
-        "coordinates": [
-          27.924744,
-          43.210489
-        ]
+        "coordinates": [27.924744, 43.210489]
       }
     },
     {
       "type": "Feature",
       "properties": {
         "id": 4,
+        "streetName": "bul. Osmi Primorski Polk",
+        "zoneType": "blue",
         "method": "manual",
         "time": "2026-04-07T19:54:50.621Z"
       },
       "geometry": {
         "type": "Point",
-        "coordinates": [
-          27.924795,
-          43.210495
-        ]
+        "coordinates": [27.924795, 43.210495]
       }
     },
     {
       "type": "Feature",
       "properties": {
         "id": 5,
+        "streetName": "bul. Osmi Primorski Polk",
+        "zoneType": "blue",
         "method": "manual",
         "time": "2026-04-07T19:54:52.105Z"
       },
       "geometry": {
         "type": "Point",
-        "coordinates": [
-          27.924843,
-          43.210503
-        ]
+        "coordinates": [27.924843, 43.210503]
       }
     },
     {
       "type": "Feature",
       "properties": {
         "id": 7,
+        "streetName": "bul. Osmi Primorski Polk",
+        "zoneType": "blue",
         "method": "manual",
         "time": "2026-04-07T19:55:15.630Z"
       },
       "geometry": {
         "type": "Point",
-        "coordinates": [
-          27.924891,
-          43.210509
-        ]
+        "coordinates": [27.924891, 43.210509]
       }
     }
   ]

@@ -17,12 +17,13 @@
 - [x] Create Profile screen with user info and logout
 
 ## Feature 3: Pre-Mapped Parking Spots
-- [ ] Write Overpass API data pipeline script to generate parking spots
-- [ ] Create spot data model and seed spots to database (spot location data pending from user)
-- [ ] Replace mock spots in useParking.ts with Supabase real-time listener
+- [x] Load spots from parking-spots.geojson (lib/parkingSpots.ts)
+- [x] Create parking_spots Supabase table + seed current 6 spots (supabase/parking_spots.sql)
+- [x] Updated parking-spots.geojson with streetName and zoneType for all spots
+- [x] Fetch spots from Supabase on mount with real-time UPDATE listener
+- [ ] Add more spots to Supabase when user provides new GeoJSON data
 - [ ] Implement marker clustering (individual at street level, clustered when zoomed out)
 - [ ] Load spots dynamically based on visible map region
-- [ ] Add real-time listener on visible spots for instant updates
 
 ## Feature 4: Spot Marking System
 - [x] Build 'I'm parking here' flow (tap free spot → bottom sheet → confirm)
@@ -38,9 +39,15 @@
 - [x] Show zone details and time prediction in spot bottom sheet
 
 ## Feature 6: Street Congestion Indicator
+- [x] Enable traffic layer on map (Apple Maps showsTraffic on iOS, Google Maps API key configured for Android)
 - [ ] Aggregate spots by street and calculate occupancy rate
 - [ ] Render color-coded street congestion polylines (green/yellow/red)
 - [ ] Toggle congestion layer visibility based on zoom level and control button
+
+## Profile Screen Customisation
+- [x] Edit profile modal (name, avatar color, bio) — saved to Supabase user_metadata
+- [x] Parking sessions list (zone, street, duration, date) — mock data, replace with real table in Feature 3
+- [x] Car plates FAB (bottom-right) — add/remove plates saved to Supabase user_metadata
 
 ## Feature 7: Points of Interest Overlays
 - [ ] Query and seed POI data (garages, private lots, EV charging)
