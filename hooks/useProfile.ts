@@ -1,4 +1,5 @@
 import { useState, useCallback, useEffect } from 'react';
+import { Alert } from 'react-native';
 import { User } from '@supabase/supabase-js';
 import { supabase } from '../lib/supabase';
 
@@ -55,7 +56,11 @@ export function useProfile(user: User | null) {
       .eq('user_id', user.id)
       .order('started_at', { ascending: false })
       .then(({ data, error }) => {
-        if (!error && data) {
+        if (error) {
+          Alert.alert('Could not load parking sessions', error.message);
+          return;
+        }
+        if (data) {
           setSessions((data as Record<string, unknown>[]).map(rowToSession));
         }
       });

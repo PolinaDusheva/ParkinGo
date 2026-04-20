@@ -1,4 +1,5 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
+import { Alert } from 'react-native';
 import { Spot, ParkingDuration } from '../types/parking';
 import { supabase } from '../lib/supabase';
 
@@ -36,7 +37,7 @@ async function insertSession(
   startedAt: string,
   endedAt: string,
 ): Promise<void> {
-  await supabase.from('parking_sessions').insert({
+  const { error } = await supabase.from('parking_sessions').insert({
     user_id: userId,
     spot_id: spot.id,
     street_name: spot.streetName,
@@ -45,6 +46,10 @@ async function insertSession(
     ended_at: endedAt,
     actual_duration_minutes: minutesBetween(startedAt, endedAt),
   });
+  if (error) {
+    Alert.alert('Could not save parking session', error.message);
+    throw error;
+  }
 }
 
 export function useParking(currentUserId: string | null) {
@@ -162,23 +167,20 @@ export function useParking(currentUserId: string | null) {
   );
 
   const leaveSpot = useCallback(
-    async (spotId: string) => {
+    async (spotId: string, currentSpots: Spot[]) => {
       if (!currentUserId) return;
 
-      // Find the spot to get occupiedAt, streetName, zoneType before freeing
-      setSpots((prev) => {
-        const spot = prev.find((s) => s.id === spotId);
+      const spot = currentSpots.find((s) => s.id === spotId);
 
-        if (spot?.occupiedAt && spot.occupiedBy === currentUserId) {
-          const endedAt = new Date().toISOString();
-          // Mark as processed so the expiry tick doesn't double-record
-          processedExpiryIds.current.add(spotId);
-          // Record the session with actual time spent
-          void insertSession(currentUserId, spot, spot.occupiedAt, endedAt);
-        }
+      if (spot?.occupiedAt && spot.occupiedBy === currentUserId) {
+        const endedAt = new Date().toISOString();
+        // Mark as processed before the await so the expiry tick doesn't double-record
+        processedExpiryIds.current.add(spotId);
+        // Await so errors surface and the session is guaranteed written before we free the spot
+        await insertSession(currentUserId, spot, spot.occupiedAt, endedAt);
+      }
 
-        return prev.map((s) => (s.id === spotId ? freeSpot(s) : s));
-      });
+      setSpots((prev) => prev.map((s) => (s.id === spotId ? freeSpot(s) : s)));
 
       await supabase
         .from('parking_spots')

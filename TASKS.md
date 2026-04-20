@@ -50,9 +50,9 @@
 - [x] Car plates FAB (bottom-right) — add/remove plates saved to Supabase user_metadata
 
 ## Feature 7: Points of Interest Overlays
-- [ ] Query and seed POI data (garages, private lots, EV charging)
-- [ ] Render POI markers with distinct icons and toggle buttons
-- [ ] Build POI detail card on tap
+- [x] Query and seed POI data (garages, private lots, EV charging)
+- [x] Render POI markers with distinct icons and toggle buttons
+- [x] Build POI detail card on tap
 
 ## Feature 8: Auto-Reserve (100m Proximity)
 - [ ] Implement 'Navigate to spot' flow with background location tracking

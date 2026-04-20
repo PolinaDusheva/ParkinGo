@@ -1,7 +1,16 @@
 {
   "permissions": {
     "allow": [
-      "Bash(npx expo:*)"
+      "Bash(npx expo:*)",
+      "Bash(git add:*)",
+      "Bash(git commit -m ':*)",
+      "Bash(git -C /Users/polinadusheva/.config/superpowers/worktrees/parkingo/feature/auto-reserve add hooks/useParking.ts hooks/useReservation.ts \"app/\\(tabs\\)/index.tsx\")",
+      "Bash(git -C /Users/polinadusheva/.config/superpowers/worktrees/parkingo/feature/auto-reserve commit -m ':*)",
+      "Bash(git merge:*)"
+    ],
+    "additionalDirectories": [
+      "/Users/polinadusheva/Documents/GitHub/ParkinGo/docs/superpowers",
+      "/Users/polinadusheva/.config/superpowers/worktrees/parkingo/feature/auto-reserve/app/(tabs)"
     ]
   }
 }

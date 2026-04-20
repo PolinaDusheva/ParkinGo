@@ -23,3 +23,17 @@ export const DURATION_OPTIONS: { label: string; value: ParkingDuration }[] = [
   { label: '2 hours', value: 120 },
   { label: '3 hours', value: 180 },
 ];
+
+export type POIType = 'garage' | 'private_lot' | 'ev_charging';
+
+export interface POI {
+  id: string;
+  lat: number;
+  lng: number;
+  name: string;
+  poiType: POIType;
+  address: string | null;
+  capacity: number | null;
+  operatingHours: string | null;
+  priceInfo: string | null;
+}
