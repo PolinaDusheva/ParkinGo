@@ -141,7 +141,7 @@ export function useParking(currentUserId: string | null) {
       setSpots((prev) =>
         prev.map((s) =>
           s.id === spotId
-            ? { ...s, status: 'occupied', occupiedBy: currentUserId, occupiedAt, expectedFreeAt }
+            ? { ...s, status: 'occupied', occupiedBy: currentUserId, occupiedAt, expectedFreeAt, reservedBy: null, reservedAt: null }
             : s,
         ),
       );
@@ -153,6 +153,8 @@ export function useParking(currentUserId: string | null) {
           occupied_by: currentUserId,
           occupied_at: occupiedAt,
           expected_free_at: expectedFreeAt,
+          reserved_by: null,
+          reserved_at: null,
         })
         .eq('id', spotId);
     },

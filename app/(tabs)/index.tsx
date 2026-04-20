@@ -99,7 +99,7 @@ export default function MapScreen() {
     spots,
     reserveSpot,
     cancelReservation,
-    onArrival: (spot, doConfirmParking) => {
+    onArrival: (spot, doConfirmParking, isActive) => {
       if (spot.zoneType !== 'none') {
         Alert.alert(
           `You've arrived at ${spot.streetName}`,
@@ -108,6 +108,7 @@ export default function MapScreen() {
             ...DURATION_OPTIONS.map(({ label, value }: { label: string; value: ParkingDuration | null }) => ({
               text: label,
               onPress: () => {
+                if (!isActive()) return;
                 doConfirmParking();
                 void parkSpot(spot.id, value);
                 setSelectedSpot(spot);
@@ -124,6 +125,7 @@ export default function MapScreen() {
             {
               text: 'Park here',
               onPress: () => {
+                if (!isActive()) return;
                 doConfirmParking();
                 void parkSpot(spot.id, null);
                 setSelectedSpot(spot);

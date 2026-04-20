@@ -36,7 +36,7 @@ interface UseReservationOptions {
   spots: Spot[];
   reserveSpot: (spotId: string) => Promise<void>;
   cancelReservation: (spotId: string) => Promise<void>;
-  onArrival: (spot: Spot, confirmParking: () => void) => void;
+  onArrival: (spot: Spot, confirmParking: () => void, isActive: () => boolean) => void;
   onSpotTaken: () => void;
 }
 
@@ -70,6 +70,7 @@ export function useReservation({
   const reservationFiredRef = useRef(false);
   const permissionRequestedRef = useRef(false);
   const lastRouteLocationRef = useRef<{ latitude: number; longitude: number } | null>(null);
+  const spotsRef = useRef(spots);
 
   const confirmParking = useCallback(() => {
     watcherRef.current?.remove();
@@ -167,7 +168,7 @@ export function useReservation({
               "You've Arrived",
               'Tap to confirm how long you are parking.',
             );
-            onArrival(spot, confirmParking);
+            onArrival(spot, confirmParking, () => reservationActiveRef.current);
           }
         },
       );
@@ -177,11 +178,17 @@ export function useReservation({
     [currentUserId, cancelNavigation, reserveSpot, onArrival, confirmParking],
   );
 
+  // Keep spotsRef current so the safety-net interval reads fresh spot data
+  // without being recreated on every real-time Supabase push.
+  useEffect(() => {
+    spotsRef.current = spots;
+  }, [spots]);
+
   useEffect(() => {
     if (!currentUserId || !reservationActive || !navigationTarget) return;
 
     const check = () => {
-      const target = spots.find((s) => s.id === navigationTarget.id);
+      const target = spotsRef.current.find((s) => s.id === navigationTarget.id);
       if (!target || target.status !== 'reserved' || target.reservedBy !== currentUserId) return;
       if (!target.reservedAt) return;
       if (Date.now() - new Date(target.reservedAt).getTime() > SAFETY_NET_MS) {
@@ -192,7 +199,7 @@ export function useReservation({
     check();
     const id = setInterval(check, SAFETY_NET_CHECK_MS);
     return () => clearInterval(id);
-  }, [currentUserId, reservationActive, navigationTarget, spots, cancelNavigation]);
+  }, [currentUserId, reservationActive, navigationTarget, cancelNavigation]);
 
   useEffect(() => {
     if (!navigationTarget || reservationActive) return;
