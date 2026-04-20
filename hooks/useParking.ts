@@ -17,11 +17,13 @@ function rowToSpot(row: Record<string, unknown>): Spot {
     occupiedBy: (row.occupied_by as string | null) ?? null,
     occupiedAt: (row.occupied_at as string | null) ?? null,
     expectedFreeAt: (row.expected_free_at as string | null) ?? null,
+    reservedBy: (row.reserved_by as string | null) ?? null,
+    reservedAt: (row.reserved_at as string | null) ?? null,
   };
 }
 
 function freeSpot(s: Spot): Spot {
-  return { ...s, status: 'free', occupiedBy: null, occupiedAt: null, expectedFreeAt: null };
+  return { ...s, status: 'free', occupiedBy: null, occupiedAt: null, expectedFreeAt: null, reservedBy: null, reservedAt: null };
 }
 
 function minutesBetween(startIso: string, endIso: string): number {
@@ -139,7 +141,7 @@ export function useParking(currentUserId: string | null) {
       setSpots((prev) =>
         prev.map((s) =>
           s.id === spotId
-            ? { ...s, status: 'occupied', occupiedBy: currentUserId, occupiedAt, expectedFreeAt }
+            ? { ...s, status: 'occupied', occupiedBy: currentUserId, occupiedAt, expectedFreeAt, reservedBy: null, reservedAt: null }
             : s,
         ),
       );
@@ -151,6 +153,8 @@ export function useParking(currentUserId: string | null) {
           occupied_by: currentUserId,
           occupied_at: occupiedAt,
           expected_free_at: expectedFreeAt,
+          reserved_by: null,
+          reserved_at: null,
         })
         .eq('id', spotId);
     },
@@ -178,12 +182,51 @@ export function useParking(currentUserId: string | null) {
 
       await supabase
         .from('parking_spots')
-        .update({ status: 'free', occupied_by: null, occupied_at: null, expected_free_at: null })
+        .update({ status: 'free', occupied_by: null, occupied_at: null, expected_free_at: null, reserved_by: null, reserved_at: null })
         .eq('id', spotId)
         .eq('occupied_by', currentUserId); // server-side ownership guard
     },
     [currentUserId],
   );
 
-  return { spots, spotsLoading, parkSpot, leaveSpot };
+  const reserveSpot = useCallback(
+    async (spotId: string): Promise<void> => {
+      if (!currentUserId) return;
+      const now = new Date().toISOString();
+      setSpots((prev) =>
+        prev.map((s) =>
+          s.id === spotId
+            ? { ...s, status: 'reserved', reservedBy: currentUserId, reservedAt: now }
+            : s,
+        ),
+      );
+      await supabase
+        .from('parking_spots')
+        .update({ status: 'reserved', reserved_by: currentUserId, reserved_at: now })
+        .eq('id', spotId)
+        .eq('status', 'free'); // atomic guard — only reserve if still free
+    },
+    [currentUserId],
+  );
+
+  const cancelReservation = useCallback(
+    async (spotId: string): Promise<void> => {
+      if (!currentUserId) return;
+      setSpots((prev) =>
+        prev.map((s) =>
+          s.id === spotId
+            ? { ...s, status: 'free', reservedBy: null, reservedAt: null }
+            : s,
+        ),
+      );
+      await supabase
+        .from('parking_spots')
+        .update({ status: 'free', reserved_by: null, reserved_at: null })
+        .eq('id', spotId)
+        .eq('reserved_by', currentUserId); // ownership guard
+    },
+    [currentUserId],
+  );
+
+  return { spots, spotsLoading, parkSpot, leaveSpot, reserveSpot, cancelReservation };
 }

@@ -1,13 +1,21 @@
 import MapView, { Marker, Polygon, PROVIDER_DEFAULT, PROVIDER_GOOGLE } from 'react-native-maps';
-import { Alert, Platform, StyleSheet, View, ActivityIndicator } from 'react-native';
+import MapViewDirections from 'react-native-maps-directions';
+import { Alert, Platform, StyleSheet, Text, TouchableOpacity, View, ActivityIndicator } from 'react-native';
 import { useEffect, useRef, useState } from 'react';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Location from 'expo-location';
 import { BottomSheet } from '../../components/BottomSheet';
 import { SpotDetail } from '../../components/SpotDetail';
+import { POIDetail } from '../../components/POIDetail';
+import { ReservationBanner } from '../../components/ReservationBanner';
 import { useParking } from '../../hooks/useParking';
+import { usePOIs } from '../../hooks/usePOIs';
+import { useReservation } from '../../hooks/useReservation';
 import { useAuth } from '../../context/AuthContext';
-import { Spot } from '../../types/parking';
+import { Spot, POI, POIType, DURATION_OPTIONS, ParkingDuration } from '../../types/parking';
 import { BLUE_ZONE_POLYGONS } from '../../lib/zones';
+
+const GOOGLE_MAPS_API_KEY = 'AIzaSyBZ6_IwKvnINioda3w7s-DRNQZHLv-V2M0';
 
 // Haversine distance in metres between two lat/lng points
 function distanceMetres(
@@ -37,7 +45,7 @@ const VARNA_REGION = {
 const STATUS_FILL: Record<Spot['status'], string> = {
   free: '#34C759',
   occupied: '#FF3B30',
-  reserved: '#FF9500',
+  reserved: '#007AFF',
 };
 
 const ZONE_BORDER: Record<Spot['zoneType'], string> = {
@@ -74,7 +82,64 @@ export default function MapScreen() {
   const [selectedSpot, setSelectedSpot] = useState<Spot | null>(null);
 
   const { user } = useAuth();
-  const { spots, spotsLoading, parkSpot, leaveSpot } = useParking(user?.id ?? null);
+  const { spots, spotsLoading, parkSpot, leaveSpot, reserveSpot, cancelReservation } = useParking(user?.id ?? null);
+
+  const { pois } = usePOIs();
+
+  const {
+    navigationTarget,
+    distanceToTarget,
+    reservationActive,
+    userLocation,
+    startNavigation,
+    cancelNavigation,
+    confirmParking,
+  } = useReservation({
+    currentUserId: user?.id ?? null,
+    spots,
+    reserveSpot,
+    cancelReservation,
+    onArrival: (spot, doConfirmParking, isActive) => {
+      if (spot.zoneType !== 'none') {
+        Alert.alert(
+          `You've arrived at ${spot.streetName}`,
+          'How long are you parking?',
+          [
+            ...DURATION_OPTIONS.map(({ label, value }: { label: string; value: ParkingDuration | null }) => ({
+              text: label,
+              onPress: () => {
+                if (!isActive()) return;
+                doConfirmParking();
+                void parkSpot(spot.id, value);
+                setSelectedSpot(spot);
+              },
+            })),
+            { text: 'Not now', style: 'cancel' as const },
+          ],
+        );
+      } else {
+        Alert.alert(
+          `You've arrived at ${spot.streetName}`,
+          'Tap to confirm parking.',
+          [
+            {
+              text: 'Park here',
+              onPress: () => {
+                if (!isActive()) return;
+                doConfirmParking();
+                void parkSpot(spot.id, null);
+                setSelectedSpot(spot);
+              },
+            },
+            { text: 'Not now', style: 'cancel' as const },
+          ],
+        );
+      }
+    },
+    onSpotTaken: () => {
+      Alert.alert('Spot Taken', 'This spot was just taken by another driver.');
+    },
+  });
 
   // Keep selectedSpot in sync when the spots array updates (e.g. after parking)
   useEffect(() => {
@@ -160,7 +225,26 @@ export default function MapScreen() {
             <SpotMarker spot={spot} />
           </Marker>
         ))}
+
+        {navigationTarget && userLocation && !reservationActive && (
+          <MapViewDirections
+            origin={userLocation}
+            destination={{ latitude: navigationTarget.lat, longitude: navigationTarget.lng }}
+            apikey={GOOGLE_MAPS_API_KEY}
+            strokeWidth={3}
+            strokeColor="#007AFF"
+            lineDashPattern={[5, 5]}
+            mode="DRIVING"
+          />
+        )}
       </MapView>
+
+      <ReservationBanner
+        navigationTarget={navigationTarget}
+        distanceToTarget={distanceToTarget}
+        reservationActive={reservationActive}
+        onCancel={() => void cancelNavigation()}
+      />
 
       {(loading || spotsLoading) && (
         <View style={styles.loadingOverlay}>
@@ -173,12 +257,22 @@ export default function MapScreen() {
           <SpotDetail
             spot={selectedSpot}
             currentUserId={user?.id ?? null}
-            onPark={(id, duration) => {
+            onPark={async (id, duration) => {
+              if (navigationTarget) {
+                if (navigationTarget.id !== id) {
+                  await cancelNavigation();
+                } else {
+                  confirmParking();
+                }
+              }
               parkSpot(id, duration);
-              // Keep sheet open — sync effect will update selectedSpot to show countdown
             }}
             onLeave={(id) => {
               leaveSpot(id);
+              setSelectedSpot(null);
+            }}
+            onNavigate={(spot) => {
+              void startNavigation(spot);
               setSelectedSpot(null);
             }}
             onDismiss={() => setSelectedSpot(null)}

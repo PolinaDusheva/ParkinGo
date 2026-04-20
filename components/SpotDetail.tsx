@@ -8,6 +8,7 @@ interface Props {
   onPark: (spotId: string, duration: ParkingDuration | null) => void;
   onLeave: (spotId: string) => void;
   onDismiss: () => void;
+  onNavigate: (spot: Spot) => void;
 }
 
 // Returns "HH:MM:SS" or "MM:SS" — updates every second
@@ -42,7 +43,7 @@ const ZONE_LABELS: Record<ZoneType, string> = {
   green: 'Green zone',
 };
 
-export function SpotDetail({ spot, currentUserId, onPark, onLeave, onDismiss }: Props) {
+export function SpotDetail({ spot, currentUserId, onPark, onLeave, onDismiss, onNavigate }: Props) {
   const [showDurationPicker, setShowDurationPicker] = useState(false);
   const [countdown, setCountdown] = useState(() => formatCountdown(spot.expectedFreeAt));
 
@@ -61,7 +62,8 @@ export function SpotDetail({ spot, currentUserId, onPark, onLeave, onDismiss }: 
 
   const isOwnSpot = spot.status === 'occupied' && spot.occupiedBy === currentUserId;
   const isOtherSpot = spot.status === 'occupied' && spot.occupiedBy !== currentUserId;
-  const isReserved = spot.status === 'reserved';
+  const isReservedByMe = spot.status === 'reserved' && spot.reservedBy === currentUserId;
+  const isReservedByOther = spot.status === 'reserved' && spot.reservedBy !== currentUserId;
   const isFree = spot.status === 'free';
 
   function handleParkPress() {
@@ -117,7 +119,8 @@ export function SpotDetail({ spot, currentUserId, onPark, onLeave, onDismiss }: 
       {isFree && <Text style={styles.statusFree}>Free</Text>}
       {isOwnSpot && <Text style={styles.statusOwn}>You're parked here</Text>}
       {isOtherSpot && <Text style={styles.statusTaken}>Occupied</Text>}
-      {isReserved && <Text style={styles.statusReserved}>Reserved</Text>}
+      {isReservedByMe && <Text style={styles.statusReservedMine}>Your reservation is active</Text>}
+      {isReservedByOther && <Text style={styles.statusReservedOther}>Reserved by another driver</Text>}
 
       {/* Countdown for own spot with a timer */}
       {isOwnSpot && spot.expectedFreeAt && countdown && (
@@ -160,6 +163,29 @@ export function SpotDetail({ spot, currentUserId, onPark, onLeave, onDismiss }: 
 
       {/* Actions */}
       {isFree && !showDurationPicker && (
+        <View style={styles.buttonRow}>
+          <TouchableOpacity
+            style={[styles.primaryButton, styles.buttonFlex, styles.navigateButton]}
+            onPress={() => onNavigate(spot)}
+          >
+            <Text style={styles.navigateButtonText}>Navigate</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.primaryButton, styles.buttonFlex]}
+            onPress={handleParkPress}
+          >
+            <Text style={styles.primaryButtonText}>I'm parking here</Text>
+          </TouchableOpacity>
+        </View>
+      )}
+
+      {isReservedByOther && (
+        <View style={[styles.primaryButton, styles.primaryButtonDisabled]}>
+          <Text style={styles.primaryButtonTextDisabled}>Reserved by another driver</Text>
+        </View>
+      )}
+
+      {isReservedByMe && (
         <TouchableOpacity style={styles.primaryButton} onPress={handleParkPress}>
           <Text style={styles.primaryButtonText}>I'm parking here</Text>
         </TouchableOpacity>
@@ -221,10 +247,14 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: '#8E8E93',
   },
-  statusReserved: {
+  statusReservedMine: {
     fontSize: 15,
-    color: '#FF9500',
+    color: '#007AFF',
     fontWeight: '500',
+  },
+  statusReservedOther: {
+    fontSize: 15,
+    color: '#8E8E93',
   },
   countdownBox: {
     backgroundColor: '#007AFF10',
@@ -295,6 +325,29 @@ const styles = StyleSheet.create({
   },
   destructiveButtonText: {
     color: '#FF3B30',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  buttonRow: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  buttonFlex: {
+    flex: 1,
+  },
+  navigateButton: {
+    backgroundColor: '#F2F2F7',
+  },
+  navigateButtonText: {
+    color: '#007AFF',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  primaryButtonDisabled: {
+    backgroundColor: '#F2F2F7',
+  },
+  primaryButtonTextDisabled: {
+    color: '#8E8E93',
     fontSize: 16,
     fontWeight: '600',
   },

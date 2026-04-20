@@ -47,6 +47,13 @@
         {
           "locationAlwaysAndWhenInUsePermission": "ParkinGo uses background location to auto-reserve parking spots as you approach."
         }
+      ],
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/icon.png",
+          "color": "#007AFF"
+        }
       ]
     ]
   }
