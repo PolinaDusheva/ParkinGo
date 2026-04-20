@@ -180,7 +180,7 @@ export function useParking(currentUserId: string | null) {
 
       await supabase
         .from('parking_spots')
-        .update({ status: 'free', occupied_by: null, occupied_at: null, expected_free_at: null })
+        .update({ status: 'free', occupied_by: null, occupied_at: null, expected_free_at: null, reserved_by: null, reserved_at: null })
         .eq('id', spotId)
         .eq('occupied_by', currentUserId); // server-side ownership guard
     },
