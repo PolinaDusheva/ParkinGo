@@ -11,6 +11,8 @@ export interface Spot {
   occupiedBy: string | null;
   occupiedAt: string | null;       // ISO timestamp
   expectedFreeAt: string | null;   // ISO timestamp
+  reservedBy: string | null;
+  reservedAt: string | null;
 }
 
 export type ParkingDuration = 30 | 60 | 120 | 180; // minutes
