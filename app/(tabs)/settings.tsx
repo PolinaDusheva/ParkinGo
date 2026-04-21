@@ -99,12 +99,18 @@ export default function SettingsScreen() {
         {
           text: 'Clear',
           style: 'destructive',
-          onPress: async () => {
-            const keys = await AsyncStorage.getAllKeys();
-            // Preserve Supabase auth keys (prefixed 'sb-')
-            const toDelete = keys.filter((k) => !k.startsWith('sb-'));
-            if (toDelete.length > 0) await AsyncStorage.multiRemove(toDelete);
-            setCacheSize('0 KB');
+          onPress: () => {
+            void (async () => {
+              try {
+                const keys = await AsyncStorage.getAllKeys();
+                // Preserve Supabase auth keys (prefixed 'sb-')
+                const toDelete = keys.filter((k) => !k.startsWith('sb-'));
+                if (toDelete.length > 0) await AsyncStorage.multiRemove(toDelete);
+                setCacheSize('0 KB');
+              } catch {
+                Alert.alert('Error', 'Could not clear cache.');
+              }
+            })();
           },
         },
       ],
@@ -120,13 +126,16 @@ export default function SettingsScreen() {
         {
           text: 'Delete',
           style: 'destructive',
-          onPress: async () => {
-            const { error } = await supabase.rpc('delete_user');
-            if (error) {
-              Alert.alert('Error', error.message);
-              return;
-            }
-            await supabase.auth.signOut();
+          onPress: () => {
+            void (async () => {
+              try {
+                const { error } = await supabase.rpc('delete_user');
+                if (error) { Alert.alert('Error', error.message); return; }
+                await supabase.auth.signOut();
+              } catch {
+                Alert.alert('Error', 'Something went wrong. Please try again.');
+              }
+            })();
           },
         },
       ],
