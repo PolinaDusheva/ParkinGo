@@ -21,4 +21,4 @@ export const COLORS = {
   },
 } as const;
 
-export type AppColors = (typeof COLORS)['light'];
+export type AppColors = (typeof COLORS)[keyof typeof COLORS];
