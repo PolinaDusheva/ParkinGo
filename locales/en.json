@@ -1,0 +1,58 @@
+{
+  "settings": {
+    "title": "Settings",
+    "appearance": {
+      "title": "Appearance",
+      "theme": "Theme",
+      "light": "Light",
+      "dark": "Dark",
+      "system": "System"
+    },
+    "language": {
+      "title": "Language",
+      "label": "Language",
+      "en": "English",
+      "bg": "Bulgarian"
+    },
+    "map": {
+      "title": "Map",
+      "mapType": "Map Type",
+      "standard": "Standard",
+      "satellite": "Satellite",
+      "hybrid": "Hybrid"
+    },
+    "parkingDefaults": {
+      "title": "Parking Defaults",
+      "defaultDuration": "Default Duration",
+      "distanceUnit": "Distance Units",
+      "alwaysAsk": "Always ask",
+      "km": "km",
+      "mi": "mi"
+    },
+    "notifications": {
+      "title": "Notifications",
+      "reservation": "Reservation alerts",
+      "arrival": "Arrival alerts",
+      "timerExpiry": "Timer expiry alerts"
+    },
+    "dataCache": {
+      "title": "Data & Cache",
+      "storageUsed": "Storage used",
+      "clearCache": "Clear Cache",
+      "clearCacheConfirm": "This will clear locally cached app data. Your account and parking data are safe."
+    },
+    "about": {
+      "title": "About",
+      "version": "Version",
+      "privacyPolicy": "Privacy Policy",
+      "terms": "Terms of Service",
+      "licenses": "Open-source Licenses"
+    },
+    "account": {
+      "title": "Account",
+      "deleteAccount": "Delete Account",
+      "deleteConfirmTitle": "Delete Account",
+      "deleteConfirmMessage": "This will permanently delete your account and all parking history. This cannot be undone."
+    }
+  }
+}

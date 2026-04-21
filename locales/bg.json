@@ -1,0 +1,58 @@
+{
+  "settings": {
+    "title": "Настройки",
+    "appearance": {
+      "title": "Външен вид",
+      "theme": "Тема",
+      "light": "Светла",
+      "dark": "Тъмна",
+      "system": "Системна"
+    },
+    "language": {
+      "title": "Език",
+      "label": "Език",
+      "en": "English",
+      "bg": "Български"
+    },
+    "map": {
+      "title": "Карта",
+      "mapType": "Тип карта",
+      "standard": "Стандартна",
+      "satellite": "Сателитна",
+      "hybrid": "Хибридна"
+    },
+    "parkingDefaults": {
+      "title": "Паркиране по подразбиране",
+      "defaultDuration": "Продължителност",
+      "distanceUnit": "Единица за разстояние",
+      "alwaysAsk": "Винаги питай",
+      "km": "км",
+      "mi": "ми"
+    },
+    "notifications": {
+      "title": "Известия",
+      "reservation": "Известия за резервация",
+      "arrival": "Известия при пристигане",
+      "timerExpiry": "Известия за изтекъл таймер"
+    },
+    "dataCache": {
+      "title": "Данни и кеш",
+      "storageUsed": "Използвано място",
+      "clearCache": "Изчисти кеша",
+      "clearCacheConfirm": "Това ще изчисти локално кешираните данни. Вашите данни са в безопасност."
+    },
+    "about": {
+      "title": "За приложението",
+      "version": "Версия",
+      "privacyPolicy": "Политика за поверителност",
+      "terms": "Условия за ползване",
+      "licenses": "Лицензи с отворен код"
+    },
+    "account": {
+      "title": "Акаунт",
+      "deleteAccount": "Изтрий акаунт",
+      "deleteConfirmTitle": "Изтриване на акаунт",
+      "deleteConfirmMessage": "Това ще изтрие завинаги вашия акаунт и цялата история на паркиране. Действието не може да се отмени."
+    }
+  }
+}
