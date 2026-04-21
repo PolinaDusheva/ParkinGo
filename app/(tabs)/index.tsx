@@ -12,6 +12,7 @@ import { useParking } from '../../hooks/useParking';
 import { usePOIs } from '../../hooks/usePOIs';
 import { useReservation } from '../../hooks/useReservation';
 import { useAuth } from '../../context/AuthContext';
+import { useSettings } from '../../hooks/useSettings';
 import { Spot, POI, POIType, DURATION_OPTIONS, ParkingDuration } from '../../types/parking';
 import { BLUE_ZONE_POLYGONS } from '../../lib/zones';
 
@@ -131,6 +132,7 @@ export default function MapScreen() {
   const [showEV, setShowEV] = useState(true);
 
   const { user } = useAuth();
+  const { settings } = useSettings(user);
   const { spots, spotsLoading, parkSpot, leaveSpot, reserveSpot, cancelReservation } = useParking(user?.id ?? null);
 
   const { pois } = usePOIs();
@@ -149,6 +151,15 @@ export default function MapScreen() {
     reserveSpot,
     cancelReservation,
     onArrival: (spot, doConfirmParking, isActive) => {
+      // If user has a default duration set, skip the picker for zone spots
+      if (settings.defaultDuration !== null && spot.zoneType !== 'none') {
+        if (!isActive()) return;
+        doConfirmParking();
+        void parkSpot(spot.id, settings.defaultDuration);
+        setSelectedSpot(spot);
+        return;
+      }
+
       if (spot.zoneType !== 'none') {
         Alert.alert(
           `You've arrived at ${spot.streetName}`,
@@ -271,6 +282,7 @@ export default function MapScreen() {
         style={styles.map}
         provider={Platform.OS === 'android' ? PROVIDER_GOOGLE : PROVIDER_DEFAULT}
         initialRegion={VARNA_REGION}
+        mapType={settings.mapType}
         showsUserLocation={locationGranted}
         showsMyLocationButton={locationGranted}
         showsCompass
