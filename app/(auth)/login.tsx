@@ -95,7 +95,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 32,
     fontWeight: '700',
-    color: '#4A90D9',
+    color: '#6C63FF',
     textAlign: 'center',
     marginBottom: 4,
   },
@@ -115,7 +115,7 @@ const styles = StyleSheet.create({
     color: '#000',
   },
   button: {
-    backgroundColor: '#4A90D9',
+    backgroundColor: '#6C63FF',
     borderRadius: 10,
     paddingVertical: 14,
     alignItems: 'center',
@@ -123,12 +123,12 @@ const styles = StyleSheet.create({
   },
   buttonText: { color: '#fff', fontSize: 16, fontWeight: '600' },
   link: { alignItems: 'center', paddingVertical: 4 },
-  linkText: { color: '#4A90D9', fontSize: 14 },
+  linkText: { color: '#6C63FF', fontSize: 14 },
   footer: {
     flexDirection: 'row',
     justifyContent: 'center',
     marginTop: 8,
   },
   footerText: { color: '#8E8E93', fontSize: 14 },
-  footerLink: { color: '#4A90D9', fontSize: 14, fontWeight: '600' },
+  footerLink: { color: '#6C63FF', fontSize: 14, fontWeight: '600' },
 });

@@ -67,7 +67,7 @@ export function AddPlateModal({ visible, plates, saving, onAdd, onRemove, onClos
               onSubmitEditing={handleAdd}
             />
             {saving ? (
-              <ActivityIndicator color="#4A90D9" style={styles.addBtn} />
+              <ActivityIndicator color="#6C63FF" style={styles.addBtn} />
             ) : (
               <TouchableOpacity style={styles.addBtn} onPress={handleAdd}>
                 <Text style={styles.addBtnText}>Add</Text>
@@ -112,7 +112,7 @@ const styles = StyleSheet.create({
   },
   headerSpacer: { width: 40 },
   title: { fontSize: 17, fontWeight: '600', color: '#000' },
-  done: { fontSize: 17, color: '#4A90D9', fontWeight: '600' },
+  done: { fontSize: 17, color: '#6C63FF', fontWeight: '600' },
   body: { flex: 1, padding: 24 },
   inputRow: { flexDirection: 'row', gap: 10, marginBottom: 24 },
   input: {
@@ -125,7 +125,7 @@ const styles = StyleSheet.create({
     color: '#000',
   },
   addBtn: {
-    backgroundColor: '#4A90D9',
+    backgroundColor: '#6C63FF',
     borderRadius: 10,
     paddingHorizontal: 18,
     alignItems: 'center',

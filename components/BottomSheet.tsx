@@ -1,8 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
-import { Animated, StyleSheet, Text, View } from 'react-native';
+import { Animated, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-
-const COLLAPSED_HEIGHT = 72;
 
 interface Props {
   children?: React.ReactNode;
@@ -15,7 +13,7 @@ export function BottomSheet({ children, expanded }: Props) {
   const [sheetHeight, setSheetHeight] = useState(300);
 
   useEffect(() => {
-    const toValue = expanded ? 0 : sheetHeight - COLLAPSED_HEIGHT;
+    const toValue = expanded ? 0 : sheetHeight;
     Animated.spring(translateY, {
       toValue,
       useNativeDriver: true,
@@ -33,13 +31,11 @@ export function BottomSheet({ children, expanded }: Props) {
         if (h === sheetHeight) return;
         setSheetHeight(h);
         // Snap without animation so first render is correct
-        if (!expanded) translateY.setValue(h - COLLAPSED_HEIGHT);
+        if (!expanded) translateY.setValue(h);
       }}
     >
       <View style={styles.handle} />
-      {children ?? (
-        <Text style={styles.hint}>Tap a parking spot to see details</Text>
-      )}
+      {children}
     </Animated.View>
   );
 }
@@ -69,10 +65,5 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     marginBottom: 12,
   },
-  hint: {
-    fontSize: 14,
-    color: '#8E8E93',
-    textAlign: 'center',
-    paddingBottom: 12,
-  },
+
 });

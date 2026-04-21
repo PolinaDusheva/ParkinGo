@@ -36,7 +36,7 @@ export function useProfile(user: User | null) {
   const [profile, setProfile] = useState<UserProfile>({
     displayName: (meta.display_name as string) ?? '',
     bio: (meta.bio as string) ?? '',
-    avatarColor: (meta.avatar_color as string) ?? '#4A90D9',
+    avatarColor: (meta.avatar_color as string) ?? '#6C63FF',
     plates: (meta.plates as string[]) ?? [],
   });
 

@@ -96,7 +96,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 28,
     fontWeight: '700',
-    color: '#4A90D9',
+    color: '#6C63FF',
     textAlign: 'center',
     marginBottom: 4,
   },
@@ -122,7 +122,7 @@ const styles = StyleSheet.create({
     color: '#000',
   },
   button: {
-    backgroundColor: '#4A90D9',
+    backgroundColor: '#6C63FF',
     borderRadius: 10,
     paddingVertical: 14,
     alignItems: 'center',
@@ -130,5 +130,5 @@ const styles = StyleSheet.create({
   },
   buttonText: { color: '#fff', fontSize: 16, fontWeight: '600' },
   link: { alignItems: 'center', paddingVertical: 4 },
-  linkText: { color: '#4A90D9', fontSize: 14 },
+  linkText: { color: '#6C63FF', fontSize: 14 },
 });

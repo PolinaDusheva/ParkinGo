@@ -1,4 +1,4 @@
-import { View, Text, TouchableOpacity, StyleSheet, Alert, ScrollView } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, Alert, ScrollView, Image } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
@@ -6,6 +6,7 @@ import { supabase } from '../../lib/supabase';
 import { useProfile, ParkingSession } from '../../hooks/useProfile';
 import { EditProfileModal } from '../../components/EditProfileModal';
 import { AddPlateModal } from '../../components/AddPlateModal';
+import { SubscriptionModal } from '../../components/SubscriptionModal';
 
 const ZONE_COLOR: Record<ParkingSession['zone'], string> = {
   blue: '#007AFF',
@@ -44,6 +45,9 @@ export default function ProfileScreen() {
   const { profile, sessions, saving, updateProfile, addPlate, removePlate } = useProfile(user);
   const [editVisible, setEditVisible] = useState(false);
   const [platesVisible, setPlatesVisible] = useState(false);
+  const [showAllSessions, setShowAllSessions] = useState(false);
+  const [paymentAdded, setPaymentAdded] = useState(false);
+  const [showSubscription, setShowSubscription] = useState(false);
 
   async function handleLogout() {
     Alert.alert('Log Out', 'Are you sure you want to log out?', [
@@ -80,26 +84,69 @@ export default function ProfileScreen() {
 
         <View style={styles.divider} />
 
+        {/* Payment card */}
+        <Text style={styles.sectionTitle}>Wallet</Text>
+        <View style={styles.paymentCard}>
+          <View style={styles.paymentCardTop}>
+            <Text style={styles.paymentCardLabel}>Balance</Text>
+            <View style={styles.paymentChip} />
+          </View>
+          <Text style={styles.paymentBalance}>0.00 €</Text>
+          {paymentAdded ? (
+            <Text style={styles.paymentCardNumber}>•••• •••• •••• 4242</Text>
+          ) : (
+            <Text style={styles.paymentCardNone}>No payment method linked</Text>
+          )}
+          <View style={styles.paymentCardBottom}>
+            <Text style={styles.paymentCardBrand}>ParkinGo Pay</Text>
+          </View>
+        </View>
+
+        <TouchableOpacity
+          style={styles.paymentButton}
+          onPress={() => setPaymentAdded((v) => !v)}
+        >
+          <Text style={styles.paymentButtonText}>
+            {paymentAdded ? 'Modify payment' : 'Add payment method'}
+          </Text>
+        </TouchableOpacity>
+
+        <View style={styles.divider} />
+
         {/* Parking sessions */}
         <Text style={styles.sectionTitle}>Parking Sessions</Text>
-        {sessions.length === 0 ? (
-          <Text style={styles.empty}>No parking sessions yet.</Text>
-        ) : (
-          sessions.map((s) => (
-            <View key={s.id} style={styles.sessionCard}>
-              <View style={[styles.zoneDot, { backgroundColor: ZONE_COLOR[s.zone] }]} />
-              <View style={styles.sessionInfo}>
-                <Text style={styles.sessionStreet}>{s.streetName}</Text>
-                <Text style={styles.sessionMeta}>
-                  {ZONE_LABEL[s.zone]} · {formatDuration(s.durationMinutes)}
-                </Text>
-                <Text style={styles.sessionDate}>
-                  {formatDate(s.startedAt)} · {formatTime(s.startedAt)} – {formatTime(s.endedAt)}
-                </Text>
-              </View>
-            </View>
-          ))
-        )}
+        <View style={styles.sessionsCard}>
+          {sessions.length === 0 ? (
+            <Text style={styles.empty}>No parking sessions yet.</Text>
+          ) : (
+            <>
+              {(showAllSessions ? sessions : sessions.slice(0, 4)).map((s) => (
+                <View key={s.id} style={styles.sessionCard}>
+                  <View style={[styles.zoneDot, { backgroundColor: ZONE_COLOR[s.zone] }]} />
+                  <View style={styles.sessionInfo}>
+                    <Text style={styles.sessionStreet}>{s.streetName}</Text>
+                    <Text style={styles.sessionMeta}>
+                      {ZONE_LABEL[s.zone]} · {formatDuration(s.durationMinutes)}
+                    </Text>
+                    <Text style={styles.sessionDate}>
+                      {formatDate(s.startedAt)} · {formatTime(s.startedAt)} – {formatTime(s.endedAt)}
+                    </Text>
+                  </View>
+                </View>
+              ))}
+              {sessions.length > 4 && (
+                <TouchableOpacity
+                  style={styles.showMoreButton}
+                  onPress={() => setShowAllSessions((v) => !v)}
+                >
+                  <Text style={styles.showMoreText}>
+                    {showAllSessions ? 'Show less' : `More (${sessions.length - 4})`}
+                  </Text>
+                </TouchableOpacity>
+              )}
+            </>
+          )}
+        </View>
 
         <View style={styles.divider} />
 
@@ -136,12 +183,26 @@ export default function ProfileScreen() {
         onRemove={removePlate}
         onClose={() => setPlatesVisible(false)}
       />
+
+      <SubscriptionModal
+        visible={showSubscription}
+        onClose={() => setShowSubscription(false)}
+      />
+
+      {/* Crown button — top-left */}
+      <TouchableOpacity
+        style={[styles.crownButton, { top: insets.top + 12 }]}
+        onPress={() => setShowSubscription(true)}
+        activeOpacity={0.8}
+      >
+        <Image source={require('../../assets/crown.png')} style={styles.crownImage} />
+      </TouchableOpacity>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#fff' },
+  container: { flex: 1, backgroundColor: '#F2F2F7' },
   scroll: { alignItems: 'center', paddingHorizontal: 24 },
   avatar: {
     width: 80,
@@ -156,7 +217,7 @@ const styles = StyleSheet.create({
   email: { fontSize: 14, color: '#8E8E93', marginTop: 4 },
   bio: { fontSize: 14, color: '#3C3C43', marginTop: 8, textAlign: 'center' },
   editLink: { marginTop: 10 },
-  editLinkText: { color: '#4A90D9', fontSize: 15, fontWeight: '500' },
+  editLinkText: { color: '#6C63FF', fontSize: 15, fontWeight: '500' },
   divider: {
     width: '100%',
     height: 1,
@@ -171,6 +232,17 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   empty: { color: '#8E8E93', fontSize: 15, marginBottom: 12 },
+  sessionsCard: {
+    width: '100%',
+    backgroundColor: '#fff',
+    borderRadius: 14,
+    paddingHorizontal: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.06,
+    shadowRadius: 4,
+    elevation: 2,
+  },
   sessionCard: {
     flexDirection: 'row',
     alignItems: 'flex-start',
@@ -185,6 +257,87 @@ const styles = StyleSheet.create({
   sessionStreet: { fontSize: 15, fontWeight: '600', color: '#000' },
   sessionMeta: { fontSize: 13, color: '#8E8E93', marginTop: 2 },
   sessionDate: { fontSize: 12, color: '#C7C7CC', marginTop: 2 },
+  paymentCard: {
+    width: '100%',
+    backgroundColor: '#6C63FF',
+    borderRadius: 20,
+    padding: 24,
+    marginBottom: 12,
+    shadowColor: '#6C63FF',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.35,
+    shadowRadius: 12,
+    elevation: 8,
+  },
+  paymentCardTop: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  paymentCardLabel: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: 'rgba(255,255,255,0.7)',
+    textTransform: 'uppercase',
+    letterSpacing: 1,
+  },
+  paymentChip: {
+    width: 32,
+    height: 24,
+    borderRadius: 6,
+    backgroundColor: 'rgba(255,255,255,0.3)',
+  },
+  paymentBalance: {
+    fontSize: 32,
+    fontWeight: '700',
+    color: '#fff',
+    marginBottom: 8,
+  },
+  paymentCardNumber: {
+    fontSize: 15,
+    color: 'rgba(255,255,255,0.85)',
+    letterSpacing: 2,
+    fontWeight: '500',
+  },
+  paymentCardNone: {
+    fontSize: 14,
+    color: 'rgba(255,255,255,0.5)',
+    fontStyle: 'italic',
+  },
+  paymentCardBottom: {
+    marginTop: 24,
+    alignItems: 'flex-end',
+  },
+  paymentCardBrand: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: 'rgba(255,255,255,0.6)',
+    letterSpacing: 0.5,
+  },
+  paymentButton: {
+    width: '100%',
+    paddingVertical: 14,
+    borderRadius: 12,
+    borderWidth: 1.5,
+    borderColor: '#6C63FF',
+    alignItems: 'center',
+    marginBottom: 4,
+  },
+  paymentButtonText: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#6C63FF',
+  },
+  showMoreButton: {
+    paddingVertical: 12,
+    alignItems: 'center',
+  },
+  showMoreText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#6C63FF',
+  },
   logoutButton: {
     width: '100%',
     paddingVertical: 14,
@@ -200,7 +353,7 @@ const styles = StyleSheet.create({
     width: 56,
     height: 56,
     borderRadius: 28,
-    backgroundColor: '#4A90D9',
+    backgroundColor: '#6C63FF',
     alignItems: 'center',
     justifyContent: 'center',
     shadowColor: '#000',
@@ -210,4 +363,18 @@ const styles = StyleSheet.create({
     elevation: 6,
   },
   fabText: { color: '#fff', fontSize: 18, fontWeight: '700' },
+  crownButton: {
+    position: 'absolute',
+    left: 16,
+    padding: 4,
+    zIndex: 10,
+  },
+  crownImage: {
+    width: 32,
+    height: 32,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.3,
+    shadowRadius: 6,
+  },
 });

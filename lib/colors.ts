@@ -7,7 +7,7 @@ export const COLORS = {
     textSecondary: '#8E8E93',
     separator: '#C6C6C8',
     destructive: '#FF3B30',
-    tint: '#4A90D9',
+    tint: '#6C63FF',
   },
   dark: {
     background: '#000000',
@@ -17,7 +17,7 @@ export const COLORS = {
     textSecondary: '#8E8E93',
     separator: '#38383A',
     destructive: '#FF453A',
-    tint: '#0A84FF',
+    tint: '#8B85FF',
   },
 } as const;
 

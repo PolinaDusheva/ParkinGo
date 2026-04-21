@@ -24,7 +24,7 @@ export function ReservationBanner({
     ? `Spot reserved on ${navigationTarget.streetName}${distanceText}`
     : `Navigating to ${navigationTarget.streetName}${distanceText}`;
 
-  const bannerColor = reservationActive ? '#007AFF' : '#1C1C1E';
+  const bannerColor = reservationActive ? '#6C63FF' : '#1C1C1E';
 
   return (
     <View style={[styles.banner, { paddingTop: insets.top + 8, backgroundColor: bannerColor }]}>

@@ -55,10 +55,10 @@
 - [x] Build POI detail card on tap
 
 ## Feature 8: Auto-Reserve (100m Proximity)
-- [ ] Implement 'Navigate to spot' flow with background location tracking
-- [ ] Auto-reserve spot at 100m proximity with 5-minute expiry
-- [ ] Build reservation UI (banner, cancel option, distance/ETA)
-- [ ] Handle reservation conflicts and expiry
+- [x] Implement 'Navigate to spot' flow with background location tracking
+- [x] Auto-reserve spot at 100m proximity with 5-minute expiry
+- [x] Build reservation UI (banner, cancel option, distance/ETA)
+- [x] Handle reservation conflicts and expiry
 
 ## Feature 9: Premium Tier (Simulated)
 - [ ] Implement free tier limitations (500m radius, 1 auto-reserve/day)

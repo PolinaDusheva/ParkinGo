@@ -130,6 +130,20 @@ export function useReservation({
       setDistanceToTarget(null);
       setReservationActive(false);
 
+      // Seed userLocation immediately so MapViewDirections renders without waiting
+      // for the first watchPosition callback (which can take several seconds).
+      try {
+        const initial = await Location.getCurrentPositionAsync({
+          accuracy: Location.Accuracy.Balanced,
+        });
+        const { latitude, longitude } = initial.coords;
+        setUserLocation({ latitude, longitude });
+        lastRouteLocationRef.current = { latitude, longitude };
+        setDistanceToTarget(Math.round(distanceMetres(latitude, longitude, spot.lat, spot.lng)));
+      } catch {
+        // Permission already granted at this point; ignore transient errors.
+      }
+
       const sub = await Location.watchPositionAsync(
         { accuracy: Location.Accuracy.Balanced, distanceInterval: 5 },
         (location) => {

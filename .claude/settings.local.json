@@ -2,7 +2,12 @@
   "permissions": {
     "allow": [
       "Bash(find /Users/elenivaneva/MobileApp -maxdepth 1 -name .env* -o -name *.env*)",
-      "WebFetch(domain:mapcarta.com)"
+      "WebFetch(domain:mapcarta.com)",
+      "Bash(git stash:*)",
+      "Bash(node -e \"const b = require\\('/Users/polinadusheva/Documents/GitHub/ParkinGo/node_modules/expo/tsconfig.base.json'\\); console.log\\(JSON.stringify\\(b.compilerOptions, null, 2\\)\\)\")",
+      "Bash(git worktree:*)",
+      "Read(//Users/polinadusheva/.config/superpowers/worktrees/parkingo/feature/settings-screen/**)",
+      "Bash(npm run:*)"
     ]
   }
 }

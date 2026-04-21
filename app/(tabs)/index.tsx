@@ -7,7 +7,7 @@ import * as Location from 'expo-location';
 import { BottomSheet } from '../../components/BottomSheet';
 import { SpotDetail } from '../../components/SpotDetail';
 import { POIDetail } from '../../components/POIDetail';
-import { ReservationBanner } from '../../components/ReservationBanner';
+
 import { useParking } from '../../hooks/useParking';
 import { usePOIs } from '../../hooks/usePOIs';
 import { useReservation } from '../../hooks/useReservation';
@@ -56,19 +56,19 @@ const ZONE_BORDER: Record<Spot['zoneType'], string> = {
 };
 
 const POI_COLORS: Record<POIType, string> = {
-  garage: '#007AFF',
-  private_lot: '#FF9500',
-  ev_charging: '#34C759',
+  garage: '#5400E8',
+  private_lot: '#8F16D9',
+  ev_charging: '#F70098',
 };
 
 const POI_ICONS: Record<POIType, string> = {
   garage: 'P',
-  private_lot: 'P',
+  private_lot: 'L',
   ev_charging: '⚡',
 };
 
 const POI_TOGGLE_LABELS: Record<POIType, string> = {
-  garage: 'Garages',
+  garage: 'Parkings',
   private_lot: 'Lots',
   ev_charging: 'EV',
 };
@@ -208,6 +208,21 @@ export default function MapScreen() {
     if (updated) setSelectedSpot(updated);
   }, [spots]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // Pan/zoom map to keep user + destination in view during navigation
+  useEffect(() => {
+    if (!userLocation || !navigationTarget) return;
+    mapRef.current?.fitToCoordinates(
+      [
+        userLocation,
+        { latitude: navigationTarget.lat, longitude: navigationTarget.lng },
+      ],
+      {
+        edgePadding: { top: 120, right: 60, bottom: 260, left: 60 },
+        animated: true,
+      },
+    );
+  }, [userLocation]); // eslint-disable-line react-hooks/exhaustive-deps
+
   useEffect(() => {
     (async () => {
       const { status } = await Location.requestForegroundPermissionsAsync();
@@ -336,20 +351,12 @@ export default function MapScreen() {
             origin={userLocation}
             destination={{ latitude: navigationTarget.lat, longitude: navigationTarget.lng }}
             apikey={GOOGLE_MAPS_API_KEY}
-            strokeWidth={3}
-            strokeColor="#007AFF"
-            lineDashPattern={[5, 5]}
+            strokeWidth={5}
+            strokeColor="#6C63FF"
             mode="DRIVING"
           />
         )}
       </MapView>
-
-      <ReservationBanner
-        navigationTarget={navigationTarget}
-        distanceToTarget={distanceToTarget}
-        reservationActive={reservationActive}
-        onCancel={() => void cancelNavigation()}
-      />
 
       {/* POI layer toggles — top-right floating buttons */}
       <View style={[styles.toggleStack, { top: insets.top + 16 }]}>
@@ -376,11 +383,11 @@ export default function MapScreen() {
 
       {(loading || spotsLoading) && (
         <View style={styles.loadingOverlay}>
-          <ActivityIndicator size="large" color="#4A90D9" />
+          <ActivityIndicator size="large" color="#6C63FF" />
         </View>
       )}
 
-      <BottomSheet expanded={selectedSpot !== null || selectedPOI !== null}>
+      <BottomSheet expanded={selectedSpot !== null || selectedPOI !== null || navigationTarget !== null}>
         {selectedSpot ? (
           <SpotDetail
             spot={selectedSpot}
@@ -407,8 +414,27 @@ export default function MapScreen() {
           />
         ) : selectedPOI ? (
           <POIDetail poi={selectedPOI} onDismiss={() => setSelectedPOI(null)} />
+        ) : navigationTarget ? (
+          <View style={styles.navSheet}>
+            <View style={styles.navSheetHeader}>
+              <View>
+                <Text style={styles.navSheetLabel}>
+                  {reservationActive ? 'Spot reserved' : 'Navigating'}
+                </Text>
+                <Text style={styles.navSheetStreet}>{navigationTarget.streetName}</Text>
+                {distanceToTarget !== null && (
+                  <Text style={styles.navSheetDistance}>{distanceToTarget} m away</Text>
+                )}
+              </View>
+              <View style={[styles.navSheetDot, { backgroundColor: reservationActive ? '#6C63FF' : '#34C759' }]} />
+            </View>
+            <TouchableOpacity style={styles.navCancelButton} onPress={() => void cancelNavigation()}>
+              <Text style={styles.navCancelText}>Cancel navigation</Text>
+            </TouchableOpacity>
+          </View>
         ) : undefined}
       </BottomSheet>
+
     </View>
   );
 }
@@ -444,6 +470,48 @@ const styles = StyleSheet.create({
   },
   toggleText: {
     fontSize: 12,
+    fontWeight: '600',
+  },
+  navSheet: {
+    gap: 16,
+  },
+  navSheetHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  navSheetLabel: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#8E8E93',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+    marginBottom: 4,
+  },
+  navSheetStreet: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#1C1C1E',
+  },
+  navSheetDistance: {
+    fontSize: 14,
+    color: '#8E8E93',
+    marginTop: 2,
+  },
+  navSheetDot: {
+    width: 14,
+    height: 14,
+    borderRadius: 7,
+  },
+  navCancelButton: {
+    backgroundColor: '#FF3B3015',
+    borderRadius: 12,
+    paddingVertical: 14,
+    alignItems: 'center',
+  },
+  navCancelText: {
+    color: '#FF3B30',
+    fontSize: 16,
     fontWeight: '600',
   },
 });

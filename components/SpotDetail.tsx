@@ -240,7 +240,7 @@ const styles = StyleSheet.create({
   },
   statusOwn: {
     fontSize: 15,
-    color: '#007AFF',
+    color: '#6C63FF',
     fontWeight: '500',
   },
   statusTaken: {
@@ -249,7 +249,7 @@ const styles = StyleSheet.create({
   },
   statusReservedMine: {
     fontSize: 15,
-    color: '#007AFF',
+    color: '#6C63FF',
     fontWeight: '500',
   },
   statusReservedOther: {
@@ -257,7 +257,7 @@ const styles = StyleSheet.create({
     color: '#8E8E93',
   },
   countdownBox: {
-    backgroundColor: '#007AFF10',
+    backgroundColor: '#6C63FF10',
     borderRadius: 12,
     paddingVertical: 12,
     paddingHorizontal: 16,
@@ -265,7 +265,7 @@ const styles = StyleSheet.create({
   },
   countdownLabel: {
     fontSize: 12,
-    color: '#007AFF',
+    color: '#6C63FF',
     fontWeight: '500',
     marginBottom: 4,
     textTransform: 'uppercase',
@@ -274,7 +274,7 @@ const styles = StyleSheet.create({
   countdownValue: {
     fontSize: 36,
     fontWeight: '700',
-    color: '#007AFF',
+    color: '#6C63FF',
     fontVariant: ['tabular-nums'],
   },
   timerOther: {
@@ -307,7 +307,7 @@ const styles = StyleSheet.create({
     color: '#1C1C1E',
   },
   primaryButton: {
-    backgroundColor: '#007AFF',
+    backgroundColor: '#6C63FF',
     borderRadius: 12,
     paddingVertical: 14,
     alignItems: 'center',
@@ -339,7 +339,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#F2F2F7',
   },
   navigateButtonText: {
-    color: '#007AFF',
+    color: '#6C63FF',
     fontSize: 16,
     fontWeight: '600',
   },

@@ -14,8 +14,8 @@ import { useState } from 'react';
 import { UserProfile } from '../hooks/useProfile';
 
 const AVATAR_COLORS = [
-  '#4A90D9', '#34C759', '#FF9500', '#FF3B30',
-  '#AF52DE', '#FF2D55', '#5AC8FA', '#FFCC00',
+  '#6C63FF', '#8B85FF', '#34C759', '#FF9500',
+  '#FF3B30', '#AF52DE', '#FF2D55', '#FFCC00',
 ];
 
 interface Props {
@@ -48,7 +48,7 @@ export function EditProfileModal({ visible, profile, saving, onSave, onClose }: 
           </TouchableOpacity>
           <Text style={styles.title}>Edit Profile</Text>
           {saving ? (
-            <ActivityIndicator color="#4A90D9" />
+            <ActivityIndicator color="#6C63FF" />
           ) : (
             <TouchableOpacity onPress={handleSave}>
               <Text style={styles.save}>Save</Text>
@@ -118,7 +118,7 @@ const styles = StyleSheet.create({
   },
   title: { fontSize: 17, fontWeight: '600', color: '#000' },
   cancel: { fontSize: 17, color: '#8E8E93' },
-  save: { fontSize: 17, color: '#4A90D9', fontWeight: '600' },
+  save: { fontSize: 17, color: '#6C63FF', fontWeight: '600' },
   body: { flex: 1, paddingHorizontal: 24, paddingTop: 24 },
   avatarRow: {
     flexDirection: 'row',
