@@ -38,6 +38,7 @@ interface UseReservationOptions {
   cancelReservation: (spotId: string) => Promise<void>;
   onArrival: (spot: Spot, confirmParking: () => void, isActive: () => boolean) => void;
   onSpotTaken: () => void;
+  notificationSettings?: { reservation: boolean; arrival: boolean };
 }
 
 export interface UseReservationResult {
@@ -57,6 +58,7 @@ export function useReservation({
   cancelReservation,
   onArrival,
   onSpotTaken,
+  notificationSettings,
 }: UseReservationOptions): UseReservationResult {
   const [navigationTarget, setNavigationTarget] = useState<Spot | null>(null);
   const [distanceToTarget, setDistanceToTarget] = useState<number | null>(null);
@@ -166,10 +168,12 @@ export function useReservation({
             reservationActiveRef.current = true;
             setReservationActive(true);
             void reserveSpot(spot.id);
-            void scheduleLocalNotification(
-              'Spot Reserved',
-              `Your spot on ${spot.streetName} is reserved! You have 5 minutes to park.`,
-            );
+            if (notificationSettings?.reservation !== false) {
+              void scheduleLocalNotification(
+                'Spot Reserved',
+                `Your spot on ${spot.streetName} is reserved! You have 5 minutes to park.`,
+              );
+            }
           }
 
           if (
@@ -178,10 +182,12 @@ export function useReservation({
             !arrivalFiredRef.current
           ) {
             arrivalFiredRef.current = true;
-            void scheduleLocalNotification(
-              "You've Arrived",
-              'Tap to confirm how long you are parking.',
-            );
+            if (notificationSettings?.arrival !== false) {
+              void scheduleLocalNotification(
+                "You've Arrived",
+                'Tap to confirm how long you are parking.',
+              );
+            }
             onArrival(spot, confirmParking, () => reservationActiveRef.current);
           }
         },

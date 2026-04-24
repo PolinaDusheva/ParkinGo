@@ -45,7 +45,7 @@ const PLANS: Plan[] = [
     price: '19.99',
     range: 'Unlimited range',
     reservations: 'Unlimited reservations',
-    color: '#2E26A3',
+    color: '#110D6B',
     accent: '#FFD700',
   },
 ];
@@ -69,7 +69,6 @@ export function SubscriptionModal({ visible, onClose }: Props) {
         </View>
 
         <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
-          <Text style={styles.crown}>♛</Text>
           <Text style={styles.subtitle}>Unlock the full ParkinGo experience</Text>
 
           {PLANS.map((plan) => {
@@ -92,7 +91,7 @@ export function SubscriptionModal({ visible, onClose }: Props) {
                 <View style={styles.cardTop}>
                   <Text style={[styles.planName, { color: plan.accent }]}>{plan.name}</Text>
                   <View style={styles.priceRow}>
-                    <Text style={[styles.currency, { color: plan.accent }]}>BGN</Text>
+                    <Text style={[styles.currency, { color: plan.accent }]}>€</Text>
                     <Text style={[styles.price, { color: plan.accent }]}>{plan.price}</Text>
                     <Text style={[styles.period, { color: plan.accent, opacity: 0.7 }]}>/mo</Text>
                   </View>
@@ -118,7 +117,7 @@ export function SubscriptionModal({ visible, onClose }: Props) {
           })}
 
           <Text style={styles.legal}>
-            Plans renew monthly. Cancel anytime. Prices in BGN, VAT included.
+            Plans renew monthly. Cancel anytime. Prices in EUR, VAT included.
           </Text>
         </ScrollView>
       </SafeAreaView>
@@ -156,7 +155,6 @@ const styles = StyleSheet.create({
     paddingBottom: 40,
     alignItems: 'center',
   },
-  crown: { fontSize: 48, marginBottom: 8 },
   subtitle: {
     fontSize: 15,
     color: '#8E8E93',

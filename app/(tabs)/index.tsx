@@ -1,5 +1,6 @@
 import MapView, { Marker, Polygon, PROVIDER_DEFAULT, PROVIDER_GOOGLE } from 'react-native-maps';
 import MapViewDirections from 'react-native-maps-directions';
+import * as Notifications from 'expo-notifications';
 import { Alert, Platform, StyleSheet, Text, TouchableOpacity, View, ActivityIndicator } from 'react-native';
 import { useEffect, useRef, useState } from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -36,6 +37,29 @@ function distanceMetres(
 
 const NEARBY_THRESHOLD_M = 10;
 
+async function scheduleTimerExpiry(spotName: string, durationMinutes: number): Promise<string | null> {
+  if (durationMinutes <= 5) return null;
+  const warningSeconds = (durationMinutes - 5) * 60;
+  return Notifications.scheduleNotificationAsync({
+    content: {
+      title: 'Parking expiring soon',
+      body: `Your parking at ${spotName} expires in 5 minutes.`,
+    },
+    trigger: {
+      type: Notifications.SchedulableTriggerInputTypes.TIME_INTERVAL,
+      seconds: warningSeconds,
+    },
+  });
+}
+
+function formatDistance(metres: number, unit: 'km' | 'mi'): string {
+  if (unit === 'mi') {
+    const miles = metres / 1609.344;
+    return miles < 0.1 ? `${Math.round(metres)} m` : `${miles.toFixed(2)} mi`;
+  }
+  return metres < 1000 ? `${Math.round(metres)} m` : `${(metres / 1000).toFixed(1)} km`;
+}
+
 const VARNA_REGION = {
   latitude: 43.2141,
   longitude: 27.9147,
@@ -68,9 +92,9 @@ const POI_ICONS: Record<POIType, string> = {
 };
 
 const POI_TOGGLE_LABELS: Record<POIType, string> = {
-  garage: 'Parkings',
-  private_lot: 'Lots',
-  ev_charging: 'EV',
+  garage: 'Public Parkings',
+  private_lot: 'Private Parkings',
+  ev_charging: 'EV stations',
 };
 
 function SpotMarker({ spot }: { spot: Spot }) {
@@ -120,6 +144,7 @@ function POIMarker({ poi }: { poi: POI }) {
 
 export default function MapScreen() {
   const mapRef = useRef<MapView>(null);
+  const timerNotifId = useRef<string | null>(null);
   const insets = useSafeAreaInsets();
   const [locationGranted, setLocationGranted] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -150,6 +175,7 @@ export default function MapScreen() {
     spots,
     reserveSpot,
     cancelReservation,
+    notificationSettings: settings.notifications,
     onArrival: (spot, doConfirmParking, isActive) => {
       // If user has a default duration set, skip the picker for zone spots
       if (settings.defaultDuration !== null && spot.zoneType !== 'none') {
@@ -157,6 +183,11 @@ export default function MapScreen() {
         doConfirmParking();
         void parkSpot(spot.id, settings.defaultDuration);
         setSelectedSpot(spot);
+        if (settings.notifications.timerExpiry) {
+          void scheduleTimerExpiry(spot.streetName, settings.defaultDuration).then((id) => {
+            timerNotifId.current = id;
+          });
+        }
         return;
       }
 
@@ -172,6 +203,11 @@ export default function MapScreen() {
                 doConfirmParking();
                 void parkSpot(spot.id, value);
                 setSelectedSpot(spot);
+                if (value !== null && settings.notifications.timerExpiry) {
+                  void scheduleTimerExpiry(spot.streetName, value).then((id) => {
+                    timerNotifId.current = id;
+                  });
+                }
               },
             })),
             { text: 'Not now', style: 'cancel' as const },
@@ -405,6 +441,10 @@ export default function MapScreen() {
             onLeave={(id) => {
               leaveSpot(id, spots);
               setSelectedSpot(null);
+              if (timerNotifId.current) {
+                void Notifications.cancelScheduledNotificationAsync(timerNotifId.current);
+                timerNotifId.current = null;
+              }
             }}
             onNavigate={(spot) => {
               void startNavigation(spot);
@@ -423,7 +463,7 @@ export default function MapScreen() {
                 </Text>
                 <Text style={styles.navSheetStreet}>{navigationTarget.streetName}</Text>
                 {distanceToTarget !== null && (
-                  <Text style={styles.navSheetDistance}>{distanceToTarget} m away</Text>
+                  <Text style={styles.navSheetDistance}>{formatDistance(distanceToTarget, settings.distanceUnit)} away</Text>
                 )}
               </View>
               <View style={[styles.navSheetDot, { backgroundColor: reservationActive ? '#6C63FF' : '#34C759' }]} />

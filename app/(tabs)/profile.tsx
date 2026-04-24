@@ -68,6 +68,15 @@ export default function ProfileScreen() {
         contentContainerStyle={[styles.scroll, { paddingTop: insets.top + 16 }]}
         showsVerticalScrollIndicator={false}
       >
+        {/* Crown button — scrolls with content */}
+        <TouchableOpacity
+          style={styles.crownButton}
+          onPress={() => setShowSubscription(true)}
+          activeOpacity={0.8}
+        >
+          <Image source={require('../../assets/crown.png')} style={styles.crownImage} />
+        </TouchableOpacity>
+
         {/* Avatar */}
         <View style={[styles.avatar, { backgroundColor: profile.avatarColor }]}>
           <Text style={styles.avatarText}>{avatarLetter}</Text>
@@ -189,14 +198,6 @@ export default function ProfileScreen() {
         onClose={() => setShowSubscription(false)}
       />
 
-      {/* Crown button — top-left */}
-      <TouchableOpacity
-        style={[styles.crownButton, { top: insets.top + 12 }]}
-        onPress={() => setShowSubscription(true)}
-        activeOpacity={0.8}
-      >
-        <Image source={require('../../assets/crown.png')} style={styles.crownImage} />
-      </TouchableOpacity>
     </View>
   );
 }
@@ -364,10 +365,9 @@ const styles = StyleSheet.create({
   },
   fabText: { color: '#fff', fontSize: 18, fontWeight: '700' },
   crownButton: {
-    position: 'absolute',
-    left: 16,
+    alignSelf: 'flex-start',
     padding: 4,
-    zIndex: 10,
+    marginBottom: 8,
   },
   crownImage: {
     width: 32,
